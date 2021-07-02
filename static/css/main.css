@@ -1029,3 +1029,14 @@ legend {
     width: 100%;
   }
 }
+
+.show_result {
+	position: absolute;
+	padding-top: 20%;
+	text-align: center;
+}
+.show_query {
+	position: absolute;
+	padding-bottom: 30%;
+	text-align: center;
+}

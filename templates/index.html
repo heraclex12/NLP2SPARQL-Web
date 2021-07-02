@@ -5,28 +5,29 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="author" content="colorlib.com">
     <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet" />
-    <link href="css/main.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet" />
   </head>
   <body>
     <div class="s003">
-      <form>
+      <div class="show_query">
+        <h2 style="color: #dafaa7">Query</h2>
+        <p id="query" style="color: #fafafa"></p>
+	    </div>
+      <form method="post">
         <div class="inner-form">
           <div class="input-field first-wrap">
             <div class="input-select">
               <select data-trigger="" name="choices-single-defaul">
-                <option placeholder="">Category</option>
-                <option>New Arrivals</option>
-                <option>Sale</option>
-                <option>Ladies</option>
-                <option>Men</option>
-                <option>Clothing</option>
-                <option>Footwear</option>
-                <option>Accessories</option>
+                <option placeholder="">Dataset</option>
+                <option>Mon</option>
+                <option>LC-QUAD</option>
+                <option>DBNQA</option>
               </select>
             </div>
           </div>
           <div class="input-field second-wrap">
-            <input id="search" type="text" placeholder="Enter Keywords?" />
+            <input id="question" type="text" placeholder="Where can one find Virginia monument?" />
           </div>
           <div class="input-field third-wrap">
             <button class="btn-search" type="button">
@@ -37,8 +38,12 @@
           </div>
         </div>
       </form>
+      <div class="show_result">
+        <h2 style="color: #dafaa7">Result</h2>
+        <p id="result" style="color: #fafafa"></p>
+      </div>
     </div>
-    <script src="js/extention/choices.js"></script>
+    <script src="{{ url_for('static', filename='js/extention/choices.js') }}"></script>
     <script>
       const choices = new Choices('[data-trigger]',
       {
@@ -46,6 +51,24 @@
         itemSelectText: '',
       });
 
+    </script>
+    <script>
+      $("button").click(function (e) {
+      // e.preventDefault();
+      var value = $("#question").val();
+      $.ajax({
+          type: "POST",
+          url: "answer",
+          data: JSON.stringify({ "question" : value } ),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function (data) {
+              $("#result").html(data['result']);
+              $("#query").text(data["query"])
+          }
+      });
+
+  });
     </script>
   </body><!-- This templates was made by Colorlib (https://colorlib.com) -->
 </html>
