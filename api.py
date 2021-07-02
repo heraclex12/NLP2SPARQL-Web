@@ -20,7 +20,7 @@ def process_sentence(sent):
   sent = sent.replace('_obd_', ' _obd_ ').replace('_oba_', ' _oba_ ')
   return sent
 
-def generate_summary(question):
+def generate_summary(question, model):
     model_inputs = tokenizer(question, max_length=max_source_length, padding=padding, truncation=True, return_tensors="pt")
     input_ids = model_inputs.input_ids.to('cuda')
     attention_mask = model_inputs.attention_mask.to('cuda')
@@ -62,22 +62,32 @@ decoder = BertModel.from_pretrained(
     config=decoder_config,
 )
 
-model = BertSeq2Seq(encoder=encoder, decoder=decoder, config=decoder_config,
+mon_model = BertSeq2Seq(encoder=encoder, decoder=decoder, config=decoder_config,
                     beam_size=num_beams, max_length=max_target_length,
                     sos_id=decoder_tokenizer.cls_token_id, eos_id=decoder_tokenizer.sep_token_id)
-model.load_state_dict(torch.load(load_model_path))
-model.to('cuda')
-model.eval()
+mon_model.load_state_dict(torch.load(load_model_path))
+mon_model.to('cuda')
+mon_model.eval()
 
 @app.route("/answer", methods=['POST'])
 def answer():
-    question = request.get_json()['question']
-    question = " ".join(question.lower().split())
-    sparql_query = generate_summary(question)
+    data = request.get_json()
+    question = data['question']
+    dataset = data['dataset']
+    if dataset == 'Dataset':
+      return {'query': '', 'result': ''}
+    elif dataset == 'Mon':
+      question = " ".join(question.lower().split())
+      sparql_query = generate_summary(question, mon_model)
+    elif dataset == 'LC-QUAD':
+      pass
+    elif dataset == 'DBNQA':
+      pass
+
     decoded_sparql_query = decode(sparql_query)
     results = query_dbpedia(decoded_sparql_query)
     if 'boolean' in results:
-      return {'query': decoded_sparql_query, 'result': results['boolean']}
+      return {'query': decoded_sparql_query, 'result': str(results['boolean'])}
     else:
       entities = []
       for r in results['results']['bindings']:
